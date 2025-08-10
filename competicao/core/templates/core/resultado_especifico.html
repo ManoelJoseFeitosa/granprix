@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block content %}
+    {% if votacao %}
+        <h2>Resultados para: {{ votacao.nome }}</h2>
+        <table class="results-table">
+            <thead>
+                <tr><th>Posição</th><th>Escuderia</th><th>Nota Final</th></tr>
+            </thead>
+            <tbody>
+                {% for resultado in resultados %}
+                    <tr class="{% if forloop.first %}winner{% endif %}">
+                        <td>{{ forloop.counter }}º</td>
+                        <td>{{ resultado.nome }}</td>
+                        <td>{{ resultado.nota_final|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h2>Votação não encontrada.</h2>
+    {% endif %}
+{% endblock %}

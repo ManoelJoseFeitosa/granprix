@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+    /* Estilos básicos para a tabela e o novo formulário */
+    .filter-form {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .filter-form label {
+        font-weight: bold;
+    }
+    .filter-form select, .filter-form button {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .history-table th, .history-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+    .history-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+</style>
+
+<h2>Histórico de Votações</h2>
+
+<form method="get" class="filter-form">
+    <label for="votacao-select">Exibir Votação:</label>
+    <select name="votacao_id" id="votacao-select">
+        {% for votacao_item in votacoes_todas %}
+            <option value="{{ votacao_item.id }}" 
+                    {% if votacao_selecionada and votacao_item.id == votacao_selecionada.id %}selected{% endif %}>
+                {{ votacao_item.nome }} (Início: {{ votacao_item.data_inicio|date:"d/m/Y" }})
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+</form>
+
+{% if votacao_selecionada %}
+    <h4 style="text-align: center; margin-bottom: 20px;">
+        Exibindo votos para: <strong>{{ votacao_selecionada.nome }}</strong>
+    </h4>
+{% endif %}
+
+<div style="overflow-x: auto;">
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Jurado</th>
+                <th>Escuderia Avaliada</th>
+                {% for criterio in criterios %}
+                    <th>{{ criterio.titulo }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for voto in votos %}
+            <tr>
+                <td>{{ voto.jurado }}</td>
+                <td>{{ voto.escuderia.nome }}</td>
+                
+                {% for criterio in criterios %}
+                    <td>
+                        {% for nota in voto.notas.all %}
+                            {% if nota.criterio.id == criterio.id %}
+                                {{ nota.valor }}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ criterios|length|add:2 }}">
+                    {% if votacao_selecionada %}
+                        Nenhum voto encontrado para esta votação.
+                    {% else %}
+                        Nenhuma votação ativa ou selecionada.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+    /* Estilos para garantir o alinhamento dos critérios */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .criterion-group {
+        margin-bottom: 25px;
+        text-align: center; /* Centraliza o conteúdo do grupo */
+    }
+    .criterion-group p { /* Estilo para o título do critério adicionado */
+        margin-bottom: 5px;
+        font-size: 1.1em;
+    }
+    .criterion-group label {
+        display: block;
+        margin-bottom: 10px; /* Aumenta o espaço entre a pergunta e a caixa */
+        font-weight: normal;
+        line-height: 1.5;
+        text-align: left; /* Mantém o texto da pergunta alinhado à esquerda */
+    }
+
+    /* AQUI ESTÁ A MUDANÇA PRINCIPAL */
+    .criterion-group input {
+        display: block;
+        width: 100px;  /* Largura bem menor para a caixa de nota */
+        margin: 0 auto; /* Centraliza a caixa de texto horizontalmente */
+        text-align: center; /* Centraliza o número digitado dentro da caixa */
+    }
+    
+    .form-title {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .submit-button-wrapper {
+        margin-top: 30px;
+    }
+</style>
+
+<h2 class="form-title">Formulário de Votação</h2>
+<form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="jurado" style="font-weight: bold;">Nome do Avaliador:</label>
+        <input type="text" id="jurado" name="jurado" required>
+    </div>
+
+    <div class="form-group">
+        <label for="escuderia" style="font-weight: bold;">Escuderia Avaliada:</label>
+        <select id="escuderia" name="escuderia" required>
+            <option value="">---------</option>
+            {% for escuderia in escuderias %}
+                <option value="{{ escuderia.id }}">{{ escuderia.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <h3 class="form-title" style="margin-top: 40px;">Critérios Avaliativos</h3>
+
+    {% for criterio in criterios %}
+        <div class="criterion-group">
+            <p><strong>{{ criterio.titulo }}</strong></p>
+
+            <label for="nota-{{ criterio.id }}">
+                {{ criterio.pergunta }} <strong>(Nota de 0 a {{ criterio.peso_maximo }})</strong>
+            </label>
+            <input type="number" id="nota-{{ criterio.id }}" name="nota-{{ criterio.id }}" min="0" max="{{ criterio.peso_maximo }}" required>
+        </div>
+    {% endfor %}
+    
+    <div class="submit-button-wrapper">
+        <button type="submit">Enviar Voto</button>
+    </div>
+
+</form>
+{% endblock %}
