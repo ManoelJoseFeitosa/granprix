@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .home-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 0;
+    }
+    .home-title {
+        font-size: 2.5em;
+        color: #005a9e;
+        margin-top: 30px;
+    }
+    /* A classe que limitava o tamanho da logo foi removida */
+</style>
+
+<div class="home-container">
+    <img src="{% static 'images/logo_granprix.png' %}" alt="Logo Gramprix">
+    <h1 class="home-title">Sistema de Votação</h1>
+</div>
+{% endblock %}
