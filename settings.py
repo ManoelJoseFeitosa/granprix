@@ -2,24 +2,22 @@ import os
 import dj_database_url
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# CORRIGIDO: Com a nova estrutura, o BASE_DIR aponta para o diretório pai do arquivo settings.py,
+# que agora é a raiz do projeto.
+BASE_DIR = Path(__file__).resolve().parent
 
 
 # ==============================================================================
 # CONFIGURAÇÕES DE PRODUÇÃO
 # ==============================================================================
 
-# ALTERADO: A Secret Key agora é lida de uma variável de ambiente no Render.
-# É muito mais seguro do que deixá-la no código.
+# A Secret Key agora é lida de uma variável de ambiente no Render.
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-# ALTERADO: O modo DEBUG será 'False' em produção (no Render) e 'True'
-# apenas se você definir a variável de ambiente DEBUG como 'True' localmente.
+# O modo DEBUG será 'False' em produção (no Render).
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-# ALTERADO: Lista de hosts permitidos. No Render, ele adicionará automaticamente
-# o endereço do seu site (ex: granprix.onrender.com).
+# Lista de hosts permitidos. No Render, ele adicionará automaticamente o endereço do seu site.
 ALLOWED_HOSTS = []
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -35,12 +33,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'votacao.apps.VotacaoConfig', # Adicionei seu app 'votacao' aqui, pois ele aparece na sua estrutura
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # ALTERADO: Adicionado o Middleware do WhiteNoise para servir arquivos estáticos.
-    # Deve vir logo após o SecurityMiddleware.
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,13 +47,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Assumindo que seu arquivo urls.py principal está na pasta 'competicao'
-ROOT_URLCONF = 'competicao.urls'
+# CORRIGIDO: Aponta para o arquivo urls.py na raiz do projeto.
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], # Adicionado para que o Django encontre sua pasta de templates na raiz.
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,13 +66,12 @@ TEMPLATES = [
     },
 ]
 
-# Assumindo que seu arquivo wsgi.py principal está na pasta 'competicao'
-WSGI_APPLICATION = 'competicao.wsgi.application'
+# CORRIGIDO: Aponta para o arquivo wsgi.py na raiz do projeto.
+WSGI_APPLICATION = 'wsgi.application'
 
 
 # Database
-# ALTERADO: A configuração do banco de dados agora lê a URL do banco PostgreSQL
-# do Render. Se não encontrar, usa o SQLite localmente (para desenvolvimento).
+# A configuração do banco de dados agora lê a URL do banco PostgreSQL do Render.
 DATABASES = {
     'default': dj_database_url.config(
         conn_max_age=600,
@@ -103,8 +99,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# ALTERADO: Ajustei o fuso horário para 'America/Fortaleza', que é o mesmo de
-# Teresina-PI e não tem horário de verão, evitando possíveis bugs com datas.
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Fortaleza'
 USE_I18N = True
@@ -112,12 +106,10 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# ALTERADO: Configuração completa para arquivos estáticos em produção com WhiteNoise.
+# Configuração para arquivos estáticos em produção com WhiteNoise.
 STATIC_URL = 'static/'
 # O comando 'collectstatic' irá juntar todos os arquivos estáticos nesta pasta.
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# Melhora o cache e a performance dos arquivos estáticos.
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Default primary key field type
