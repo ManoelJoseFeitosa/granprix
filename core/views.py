@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Count, F, FloatField, Case, When
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from .models import Votacao, Escuderia, Criterio, Voto, Nota
 
 def home_view(request):
@@ -30,13 +32,9 @@ def votacao_view(request):
     contexto = {'votacao_ativa': votacao_ativa, 'escuderias': escuderias, 'criterios': criterios}
     return render(request, 'core/votacao.html', contexto)
 
-# ==================================================================
-# VIEW DE RESULTADOS CORRIGIDA
-# ==================================================================
 def resultados_view(request):
     try:
         votacao_ativa = Votacao.objects.get(esta_ativa=True)
-        # CORREÇÃO: trocamos 'voto__' por 'votos_escuderia__' para corresponder ao related_name do modelo
         escuderias = Escuderia.objects.filter(votos_escuderia__votacao=votacao_ativa).annotate(
             total_pontos=Sum('votos_escuderia__notas__valor'),
             num_votos=Count('votos_escuderia', distinct=True)
@@ -54,13 +52,9 @@ def resultados_view(request):
     contexto = {'votacao_ativa': votacao_ativa, 'resultados': escuderias}
     return render(request, 'core/resultados.html', contexto)
 
-# ==================================================================
-# VIEW DE RESULTADO ESPECÍFICO CORRIGIDA
-# ==================================================================
 def resultado_especifico_view(request, votacao_id):
     try:
         votacao = Votacao.objects.get(id=votacao_id)
-        # CORREÇÃO: trocamos 'voto__' por 'votos_escuderia__' aqui também
         escuderias = Escuderia.objects.filter(votos_escuderia__votacao=votacao).annotate(
             total_pontos=Sum('votos_escuderia__notas__valor'),
             num_votos=Count('votos_escuderia', distinct=True)
@@ -96,9 +90,9 @@ def historico_votacoes_view(request):
     if votacao_selecionada:
         criterios = votacao_selecionada.criterios.order_by('id')
         lista_votos = Voto.objects.filter(votacao=votacao_selecionada)\
-                                  .select_related('escuderia')\
-                                  .prefetch_related('notas__criterio')\
-                                  .order_by('jurado')
+                                      .select_related('escuderia')\
+                                      .prefetch_related('notas__criterio')\
+                                      .order_by('jurado')
     
     contexto = {
         'criterios': criterios,
@@ -111,3 +105,18 @@ def historico_votacoes_view(request):
 
 def sucesso_view(request):
     return render(request, 'core/sucesso.html')
+
+def create_superuser_programmatically(request):
+    ADMIN_USERNAME = "joseane"
+    ADMIN_PASSWORD = "12345678" 
+    ADMIN_EMAIL = "joseane@granprix.com"
+
+    if not User.objects.filter(username=ADMIN_USERNAME).exists():
+        User.objects.create_superuser(
+            username=ADMIN_USERNAME,
+            password=ADMIN_PASSWORD,
+            email=ADMIN_EMAIL
+        )
+        return HttpResponse("<h1>Superusuário criado com sucesso!</h1><p>Pode apagar este código agora.</p>")
+    else:
+        return HttpResponse("<h1>Superusuário já existe.</h1><p>Pode apagar este código agora.</p>")
