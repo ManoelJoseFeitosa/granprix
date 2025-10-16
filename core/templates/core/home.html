@@ -16,11 +16,18 @@
         color: #005a9e;
         margin-top: 30px;
     }
-    /* A classe que limitava o tamanho da logo foi removida */
+
+    /* ADIÇÃO: Faz a imagem ocupar 100% da largura do contêiner */
+    .home-container img {
+        width: 100%; /* Faz a imagem se esticar horizontalmente */
+        max-width: 100%; /* Garante que a imagem não ultrapasse o contêiner */
+        height: auto; /* Mantém a proporção da imagem */
+        margin-bottom: 20px; /* Opcional: Adiciona um espaço abaixo da imagem */
+    }
 </style>
 
 <div class="home-container">
-    <img src="{% static 'images/dspilogo.jpeg' %}" alt="Logo Gramprix">
+    <img src="{% static 'images/dspilogo.jpeg' %}" alt="Logo Desafio Senai">
     <h1 class="home-title">Sistema de Votação</h1>
 </div>
 {% endblock %}
