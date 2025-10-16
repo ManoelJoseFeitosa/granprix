@@ -1,3 +1,4 @@
+# Forçando um novo deploy para criar o superusuário
 import os
 import dj_database_url
 from pathlib import Path
