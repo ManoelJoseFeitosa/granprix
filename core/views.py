@@ -3,6 +3,7 @@ from django.db.models import Sum, Count, F, FloatField, Case, When
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from .models import Votacao, Escuderia, Criterio, Voto, Nota
+from django.contrib import messages # <--- IMPORT ADICIONADO
 
 def home_view(request):
     return render(request, 'core/home.html')
@@ -21,17 +22,27 @@ def votacao_view(request):
     if request.method == 'POST' and votacao_ativa:
         jurado = request.POST.get('jurado')
         escuderia_id = request.POST.get('escuderia')
-        voto = Voto.objects.create(votacao=votacao_ativa, jurado=jurado, escuderia_id=escuderia_id)
+        escuderia = Escuderia.objects.get(id=escuderia_id) # Pega o objeto escuderia
+        
+        voto = Voto.objects.create(votacao=votacao_ativa, jurado=jurado, escuderia=escuderia)
         
         for criterio in criterios:
             valor_nota = request.POST.get(f'nota-{criterio.id}')
             if valor_nota:
                 Nota.objects.create(voto=voto, criterio=criterio, valor=int(valor_nota))
-        return redirect('sucesso')
+        
+        # MUDANÇA AQUI: Adiciona mensagem de sucesso e redireciona para a própria página de votação
+        messages.success(request, f'Voto para a escuderia "{escuderia.nome}" registrado com sucesso!')
+        return redirect('votacao') # Assumindo que o nome da URL de votação é 'votacao'
 
     contexto = {'votacao_ativa': votacao_ativa, 'escuderias': escuderias, 'criterios': criterios}
     return render(request, 'core/votacao.html', contexto)
 
+def sucesso_view(request):
+    # Esta view não é mais chamada pelo formulário, mas pode continuar existindo
+    return render(request, 'core/sucesso.html')
+
+# As outras views (resultados_view, etc.) permanecem inalteradas
 def resultados_view(request):
     try:
         votacao_ativa = Votacao.objects.get(esta_ativa=True)
@@ -90,9 +101,9 @@ def historico_votacoes_view(request):
     if votacao_selecionada:
         criterios = votacao_selecionada.criterios.order_by('id')
         lista_votos = Voto.objects.filter(votacao=votacao_selecionada)\
-                                      .select_related('escuderia')\
-                                      .prefetch_related('notas__criterio')\
-                                      .order_by('jurado')
+                                        .select_related('escuderia')\
+                                        .prefetch_related('notas__criterio')\
+                                        .order_by('jurado')
     
     contexto = {
         'criterios': criterios,
@@ -103,20 +114,4 @@ def historico_votacoes_view(request):
     
     return render(request, 'core/historico.html', contexto)
 
-def sucesso_view(request):
-    return render(request, 'core/sucesso.html')
 
-def create_superuser_programmatically(request):
-    ADMIN_USERNAME = "joseane"
-    ADMIN_PASSWORD = "12345678" 
-    ADMIN_EMAIL = "joseane@granprix.com"
-
-    if not User.objects.filter(username=ADMIN_USERNAME).exists():
-        User.objects.create_superuser(
-            username=ADMIN_USERNAME,
-            password=ADMIN_PASSWORD,
-            email=ADMIN_EMAIL
-        )
-        return HttpResponse("<h1>Superusuário criado com sucesso!</h1><p>Pode apagar este código agora.</p>")
-    else:
-        return HttpResponse("<h1>Superusuário já existe.</h1><p>Pode apagar este código agora.</p>")

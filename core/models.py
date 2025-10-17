@@ -1,15 +1,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-# MODELO ATUALIZADO
 class Votacao(models.Model):
     nome = models.CharField(max_length=200, unique=True)
     data_inicio = models.DateTimeField(auto_now_add=True)
     esta_ativa = models.BooleanField(default=True)
-    
-    # ==========================================================
-    # LINHA ADICIONADA PARA CRIAR O VÍNCULO DIRETO
-    # ==========================================================
     criterios = models.ManyToManyField('Criterio', verbose_name="Critérios da Votação")
 
     def __str__(self):
@@ -32,7 +27,7 @@ class Criterio(models.Model):
 class Voto(models.Model):
     votacao = models.ForeignKey(Votacao, on_delete=models.CASCADE, related_name='votos')
     jurado = models.CharField(max_length=100)
-    escuderia = models.ForeignKey(Escuderia, on_delete=models.CASCADE, related_name='votos_escuderia') # Adicionado related_name para clareza
+    escuderia = models.ForeignKey(Escuderia, on_delete=models.CASCADE, related_name='votos_escuderia')
     data_votacao = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -45,3 +40,4 @@ class Nota(models.Model):
     
     def __str__(self):
         return f"{self.criterio.titulo}: {self.valor}"
+    
