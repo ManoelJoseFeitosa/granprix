@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Escuderia, Voto
 from django.db.models import Avg, F
+from django.contrib import messages # 1. Importar o 'messages' do Django
 
 def votacao_view(request):
     if request.method == 'POST':
@@ -20,14 +21,20 @@ def votacao_view(request):
             prototipo=request.POST.get('prototipo'),
             pitch=request.POST.get('pitch'),
         )
-        return redirect('sucesso') # Redireciona para a página de sucesso
+        
+        # 2. Adicionar uma mensagem de sucesso que será exibida na próxima página
+        # (Estou assumindo que seu modelo Escuderia tem um campo 'nome')
+        messages.success(request, f'Voto para a escuderia "{escuderia.nome}" registrado com sucesso!')
+
+        # 3. Mudar o redirecionamento para a própria página de votação
+        return redirect('votacao') # Redireciona para a página de votação
 
     escuderias = Escuderia.objects.all()
     contexto = {'escuderias': escuderias}
     return render(request, 'votacao/votacao.html', contexto)
 
 def resultados_view(request):
-    # Consulta para calcular a nota final
+    # (Esta função permanece inalterada)
     resultados = Escuderia.objects.annotate(
         media_aderencia=Avg('voto__aderencia'),
         media_criatividade=Avg('voto__criatividade'),
@@ -40,10 +47,11 @@ def resultados_view(request):
         nota_final=F('media_aderencia') + F('media_criatividade') + F('media_inovacao') +
                    F('media_atratividade') + F('media_canvas') + F('media_prototipo') +
                    F('media_pitch')
-    ).order_by('-nota_final') # Ordena do maior para o menor
+    ).order_by('-nota_final')
 
     contexto = {'resultados': resultados}
     return render(request, 'votacao/resultados.html', contexto)
 
 def sucesso_view(request):
+    # (Esta função não é mais usada pelo formulário, mas pode deixar ela aqui)
     return render(request, 'votacao/sucesso.html')
